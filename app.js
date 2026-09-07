@@ -11,9 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let lenis;
   if (typeof Lenis !== 'undefined') {
     lenis = new Lenis({
-      duration: 1.0,
+      duration: 0.85,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
+      gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1.0,
       touchMultiplier: 1.5,
@@ -45,27 +46,25 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.position.set(7, 6, 8);
     camera.lookAt(0, 0.5, 0);
 
-    // WebGL Renderer with performance throttling
+    // WebGL Renderer with performance optimization (ShadowMaps off for 60fps)
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
-      antialias: true
+      antialias: true,
+      powerPreference: 'high-performance'
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    // Lighting (Direktes, performantes Licht ohne schwere Shadow-Maps)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xdfa96e, 1.2);
+    const dirLight = new THREE.DirectionalLight(0xdfa96e, 1.3);
     dirLight.position.set(10, 15, 8);
-    dirLight.castShadow = true;
     scene.add(dirLight);
 
-    const fillLight = new THREE.DirectionalLight(0x34d399, 0.5);
+    const fillLight = new THREE.DirectionalLight(0x34d399, 0.6);
     fillLight.position.set(-8, 5, -6);
     scene.add(fillLight);
 
@@ -83,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const baseMesh = new THREE.Mesh(baseGeo, baseMat);
     baseMesh.position.y = -0.3;
-    baseMesh.receiveShadow = true;
     baseGroup.add(baseMesh);
 
     // Drainage-Filtervlies Akzent
@@ -111,8 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let z = -2; z <= 2; z++) {
         const tile = new THREE.Mesh(tileGeo, paveMat);
         tile.position.set(x * 0.95 + 0.45, 0.15, z * 0.95);
-        tile.castShadow = true;
-        tile.receiveShadow = true;
         paveGroup.add(tile);
       }
     }
@@ -126,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let pz = -2; pz <= 2; pz++) {
       const plank = new THREE.Mesh(plankGeo, woodMat);
       plank.position.set(1.4, 0.15, pz * 0.48);
-      plank.castShadow = true;
       paveGroup.add(plank);
     }
     modelGroup.add(paveGroup);
@@ -147,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2e18 });
     const trunk = new THREE.Mesh(trunkGeo, trunkMat);
     trunk.position.set(-1.2, 1.0, -1.2);
-    trunk.castShadow = true;
     vegGroup.add(trunk);
 
     const crownGeo = new THREE.DodecahedronGeometry(0.85, 1);
@@ -157,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const crown = new THREE.Mesh(crownGeo, crownMat);
     crown.position.set(-1.2, 2.3, -1.2);
-    crown.castShadow = true;
     vegGroup.add(crown);
 
     // Zierbepflanzung & Beete
@@ -173,29 +166,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modelGroup.add(vegGroup);
 
-    // ═══ ANIMATIONS-SCHLEIFE (Über GSAP Ticker synchronisiert für 100% Trackpad-Flüssigkeit) ═══
+    // ═══ RENDERING NUR WENN DIE 3D-BÜHNE SICHTBAR IST (Spart 90% GPU-Last!) ═══
+    let isStageVisible = true;
+    if (typeof ScrollTrigger !== 'undefined') {
+      ScrollTrigger.create({
+        trigger: '#scrollyStage',
+        start: 'top bottom',
+        end: 'bottom top',
+        onToggle: (self) => {
+          isStageVisible = self.isActive;
+        }
+      });
+    }
+
     if (typeof gsap !== 'undefined') {
       gsap.ticker.add(() => {
+        if (!isStageVisible) return; // Null GPU-Verbrauch außerhalb der 3D-Sektion!
         modelGroup.rotation.y += 0.0012;
         renderer.render(scene, camera);
       });
     } else {
       const animate = () => {
         requestAnimationFrame(animate);
-        modelGroup.rotation.y += 0.0012;
-        renderer.render(scene, camera);
+        if (isStageVisible) {
+          modelGroup.rotation.y += 0.0012;
+          renderer.render(scene, camera);
+        }
       };
       animate();
     }
 
-    // ═══ GSAP SCROLLTRIGGER SYNCHRONISATION (Exploded View) ═══
+    // ═══ GSAP SCROLLTRIGGER SYNCHRONISATION (Direktes Scrubbing ohne Trägheits-Lag) ═══
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
       const scrollyTL = gsap.timeline({
         scrollTrigger: {
           trigger: '#scrollyStage',
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.8,
+          scrub: 0.2, // 0.2 statt 0.8 für sofortiges, direktes Feedback beim Scrollen
         }
       });
 

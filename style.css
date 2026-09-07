@@ -37,9 +37,11 @@
 
 html {
   text-size-adjust: 100%;
+  scroll-behavior: auto !important;
 }
 
 body {
+  scroll-behavior: auto !important;
   margin: 0;
   padding: 0;
   background-color: var(--bg-dark);
