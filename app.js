@@ -173,15 +173,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modelGroup.add(vegGroup);
 
-    // ═══ ANIMATIONS-SCHLEIFE ═══
-    let reqId;
-    const animate = () => {
-      reqId = requestAnimationFrame(animate);
-      // Ganz subtile Eigendrehung im Leerlauf
-      modelGroup.rotation.y += 0.0015;
-      renderer.render(scene, camera);
-    };
-    animate();
+    // ═══ ANIMATIONS-SCHLEIFE (Über GSAP Ticker synchronisiert für 100% Trackpad-Flüssigkeit) ═══
+    if (typeof gsap !== 'undefined') {
+      gsap.ticker.add(() => {
+        modelGroup.rotation.y += 0.0012;
+        renderer.render(scene, camera);
+      });
+    } else {
+      const animate = () => {
+        requestAnimationFrame(animate);
+        modelGroup.rotation.y += 0.0012;
+        renderer.render(scene, camera);
+      };
+      animate();
+    }
 
     // ═══ GSAP SCROLLTRIGGER SYNCHRONISATION (Exploded View) ═══
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
