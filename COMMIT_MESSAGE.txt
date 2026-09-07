@@ -1,0 +1,12 @@
+feat(website): Matthias Grötsch, Gebäudemanagement & Dienstleistung - Immersive Studio Edition v4.0
+
+Design: Immersive 3D Scrollytelling (Groundwork Exploded View) + Split Status Navigation
+Stack: HTML5, Tailwind CSS, Three.js (WebGL), GSAP ScrollTrigger, Lenis Smooth Scroll
+- 3D Scrollytelling Stage: Layered Groundwork Exploded View mit flüssiger Schicht-Separation
+- Eiserne Mobile-Responsiveness (Zero-Collision, no scroll-traps, pointer-events: none auf Mobile)
+- 7-Säulen Website-Audit-Pro durchgeführt: 100% GRÜN
+- Deutscher Rechtscheck: Impressum gem. § 5 DDG + DSGVO Art. 13 Modals mit echten Daten
+- TDDDG-konformes Consent-Banner & Two-Click Maps (data-src)
+- Lokale Fonts & Core Web Vitals optimiert (LCP Vektor-Visual, 0 Layout Shift)
+- Interaktiver Regensburger Projekt- & Flächenrechner + 3-Step Funnel
+- 0 hallucinated data points (Matthias Grötsch, Spandauer Str. 2a, 93053 Regensburg)
